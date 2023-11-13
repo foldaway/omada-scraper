@@ -3,7 +3,7 @@ import { Release, ReleaseListItem, ReleaseType } from './types';
 import TurndownService from 'turndown';
 
 const REGEX_TITLE_CONTROLLER = /Omada (\w+) Controller_V([0-9.]+)_?(\w+)?/i;
-const REGEX_TITLE_RELEASE_DATE = /Released on ([A-Za-z0-9\s,]+)/i;
+const REGEX_TITLE_RELEASE_DATE = /(?:Released|Updated) on ([A-Za-z0-9\s,]+)/i;
 
 function getReleaseType(text: string): ReleaseType {
   switch (text.trim().toLowerCase()) {
