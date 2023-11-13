@@ -29,7 +29,7 @@ try {
 
 async function scraper() {
   const browser = await puppeteer.use(StealthPlugin()).launch({
-    headless: isProduction,
+    headless: isProduction ? 'new' : false,
     defaultViewport: null,
     args: isProduction ? ['--no-sandbox'] : [],
   });
