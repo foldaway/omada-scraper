@@ -1,5 +1,5 @@
 import { Browser } from 'puppeteer';
-import { Release, ReleaseListItem, ReleaseType } from './types';
+import { Platform, Release, ReleaseListItem, ReleaseType } from './types';
 import TurndownService from 'turndown';
 
 const REGEX_TITLE_CONTROLLER = /Omada (\w+) Controller_V([0-9.]+)[_|\s]?(\w+)?/i;
@@ -13,6 +13,20 @@ function getReleaseType(text: string): ReleaseType {
     }
     case 'hardware': {
       return 'hardware';
+    }
+    default: {
+      return 'unknown';
+    }
+  }
+}
+
+function getPlatform(text: string): Platform {
+  switch (text.trim().toLowerCase()) {
+    case 'windows': {
+      return 'windows';
+    }
+    case 'linux': {
+      return 'linux';
     }
     default: {
       return 'unknown';
@@ -108,7 +122,7 @@ export default async function controller(browser: Browser): Promise<Release[]> {
       summary,
       type: getReleaseType(controllerMatches[1]),
       version: controllerMatches[2],
-      platform: controllerMatches[3] ?? null,
+      platform: getPlatform(controllerMatches[3] ?? ''),
       date: parseDate(releaseDateMatches[1]),
     };
 

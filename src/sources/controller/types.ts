@@ -16,3 +16,5 @@ export interface ReleaseListItem {
   summary: string;
   link: string;
 }
+
+export type Platform = 'windows' | 'linux' | 'unknown';
