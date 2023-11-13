@@ -92,6 +92,8 @@ export default async function controller(browser: Browser): Promise<Release[]> {
       continue;
     }
 
+    console.error(`working on '${title}'`);
+
     await page.goto(link);
 
     const postBody = await page.evaluate(() => {
