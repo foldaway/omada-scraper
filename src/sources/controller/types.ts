@@ -7,7 +7,7 @@ export interface Release {
   body_html: string;
   date: string;
   link: string;
-  platform: string | null;
+  platform: Platform;
   type: ReleaseType;
 }
 

@@ -23,7 +23,7 @@ function generateEntry(release: Release): Element {
           {
             type: 'text',
             value: `v${release.version}${
-              release.platform ? ` for ${release.platform}` : ''
+              release.platform !== 'unknown' ? ` for ${release.platform}` : ''
             }`,
           },
         ],
