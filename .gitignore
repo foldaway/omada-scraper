@@ -177,5 +177,4 @@ public/
 
 dist/
 output/
-!output/index.html
 traces
