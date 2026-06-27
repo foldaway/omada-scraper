@@ -2,6 +2,7 @@
   "name": "omada-scraper",
   "version": "1.0.0",
   "main": "main.js",
+  "type": "module",
   "repository": "git@github.com:bottleneckco/omada-scraper.git",
   "author": "Duncan Leo <hello@duncanleo.me>",
   "license": "MIT",
