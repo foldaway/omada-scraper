@@ -16,6 +16,7 @@
     "@biomejs/biome": "2.5.0",
     "@cloudflare/puppeteer": "1.1.0",
     "@cloudflare/vite-plugin": "1.42.1",
+    "@cloudflare/vitest-pool-workers": "0.16.18",
     "@types/luxon": "3.7.2",
     "@types/mustache": "4.2.6",
     "@types/turndown": "5.0.6",
