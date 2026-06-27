@@ -5,6 +5,9 @@
   "compatibility_date": "2026-06-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./src/index.ts",
+  "triggers": {
+    "crons": ["0 0 * * 6"]
+  },
   "browser": {
     "binding": "BROWSER"
   },
