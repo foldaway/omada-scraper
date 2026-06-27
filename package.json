@@ -7,7 +7,8 @@
   "author": "Duncan Leo <hello@duncanleo.me>",
   "license": "MIT",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "X_BROWSER_HEADFUL=true vite dev",
+    "dev:scheduled-trigger": "curl http://localhost:5173/cdn-cgi/handler/scheduled?format=json",
     "build": "vite build",
     "cf-typegen": "wrangler types"
   },

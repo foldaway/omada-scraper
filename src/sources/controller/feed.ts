@@ -1,14 +1,17 @@
-import { Element, Root } from 'xast';
-import { Release } from './types';
+import type { Element, Root } from 'xast';
+import { toXml } from 'xast-util-to-xml';
+import type { Release } from './types';
 
 function generateEntry(release: Release): Element {
   return {
     type: 'element',
     name: 'entry',
+    attributes: {},
     children: [
       {
         type: 'element',
         name: 'id',
+        attributes: {},
         children: [
           {
             type: 'text',
@@ -19,6 +22,7 @@ function generateEntry(release: Release): Element {
       {
         type: 'element',
         name: 'title',
+        attributes: {},
         children: [
           {
             type: 'text',
@@ -44,6 +48,7 @@ function generateEntry(release: Release): Element {
       {
         type: 'element',
         name: 'updated',
+        attributes: {},
         children: [
           {
             type: 'text',
@@ -86,10 +91,12 @@ function generateEntry(release: Release): Element {
       {
         type: 'element',
         name: 'author',
+        attributes: {},
         children: [
           {
             type: 'element',
             name: 'name',
+            attributes: {},
             children: [
               {
                 type: 'text',
@@ -104,7 +111,7 @@ function generateEntry(release: Release): Element {
 }
 
 export default async function generateFeed(
-  releases: Release[]
+  releases: Release[],
 ): Promise<string> {
   const root: Root = {
     type: 'root',
@@ -124,6 +131,7 @@ export default async function generateFeed(
           {
             type: 'element',
             name: 'id',
+            attributes: {},
             children: [
               {
                 type: 'text',
@@ -135,6 +143,7 @@ export default async function generateFeed(
           {
             type: 'element',
             name: 'title',
+            attributes: {},
             children: [
               {
                 type: 'text',
@@ -145,6 +154,7 @@ export default async function generateFeed(
           {
             type: 'element',
             name: 'updated',
+            attributes: {},
             children: [
               {
                 type: 'text',
@@ -156,8 +166,7 @@ export default async function generateFeed(
             type: 'element',
             name: 'link',
             attributes: {
-              href:
-                'https://community.tp-link.com/en/business/forum/582?tagId=684,854',
+              href: 'https://community.tp-link.com/en/business/forum/582?tagId=684,854',
             },
             children: [],
           },
@@ -166,8 +175,7 @@ export default async function generateFeed(
             name: 'link',
             attributes: {
               rel: 'self',
-              href:
-                'https://fourthclasshonours.github.io/omada-scraper/controller.atom',
+              href: 'https://fourthclasshonours.github.io/omada-scraper/controller.atom',
             },
             children: [],
           },
@@ -176,8 +184,6 @@ export default async function generateFeed(
       },
     ],
   };
-
-  const { toXml } = await import('xast-util-to-xml');
 
   return toXml(root);
 }

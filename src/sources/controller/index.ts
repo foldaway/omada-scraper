@@ -1,8 +1,9 @@
-import { Browser } from 'puppeteer';
-import { Platform, Release, ReleaseListItem, ReleaseType } from './types';
+import type { Browser } from '@cloudflare/puppeteer';
 import TurndownService from 'turndown';
+import { Platform, Release, ReleaseListItem, ReleaseType } from './types';
 
-const REGEX_TITLE_CONTROLLER = /Omada (\w+) Controller_V([0-9.]+(?:\sBeta)?)[_|\s]?(\w+)?/i;
+const REGEX_TITLE_CONTROLLER =
+  /Omada (\w+) Controller_V([0-9.]+(?:\sBeta)?)[_|\s]?(\w+)?/i;
 const REGEX_TITLE_RELEASE_DATE = /(?:Released|Updated) on ([A-Za-z0-9\s,]+)/i;
 
 function getReleaseType(text: string): ReleaseType {
@@ -37,11 +38,11 @@ function getPlatform(text: string): Platform {
 function parseDate(text: string) {
   const parsedDate = Date.parse(text);
 
-  if (!isNaN(parsedDate)) {
+  if (!Number.isNaN(parsedDate)) {
     return new Date(text).toISOString();
   }
 
-  const textPatched = text.replace(/(\d+)(?:st|nd|rd|th)/, (match, p1) => {
+  const textPatched = text.replace(/(\d+)(?:st|nd|rd|th)/, (_match, p1) => {
     return p1;
   });
 
@@ -53,14 +54,14 @@ export default async function controller(browser: Browser): Promise<Release[]> {
 
   const page = await browser.newPage();
   await page.goto(
-    'https://community.tp-link.com/en/business/forum/582?tagId=684,854'
+    'https://community.tp-link.com/en/business/forum/582?tagId=684,854',
   );
 
   const releaseListItems = await page.evaluate(() => {
     const results: ReleaseListItem[] = [];
 
     const topicListItemElements = Array.from(
-      document.querySelectorAll('.topic-list .item-wrap')
+      document.querySelectorAll('.topic-list .item-wrap'),
     );
 
     for (const topicListItemElement of topicListItemElements) {

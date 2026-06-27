@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>omada-scraper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+
+  <style>
+    html {
+      font-family: sans-serif;
+    }
+  </style>
+
+  <body>
+    <h1>omada-scraper</h1>
+
+    <p>Scripts to scrape data for the Omada network system.</p>
+
+    <section>
+      <h2>Generated Files</h2>
+
+      <ul>
+        {{#files}}
+          <li>
+            <a href="{{.}}">{{.}}</a>
+          </li>
+        {{/files}}
+      </ul>
+    </section>
+
+    <p>
+      Generated
+      <time datetime="{{generatedTime.isoString}}">{{generatedTime.displayText}}</time>
+      on
+      <span>{{osInfo.platform}}/{{osInfo.arch}}</span>
+    </p>
+  </body>
+</html>
