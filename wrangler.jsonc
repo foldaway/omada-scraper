@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "omada-scraper",
+  // Set this to today's date
+  "compatibility_date": "2026-06-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./src/index.ts",
+  "browser": {
+    "binding": "BROWSER"
+  }
+}
