@@ -7,20 +7,21 @@ import controller from './sources/controller';
 import generateFeed from './sources/controller/feed';
 import indexTemplate from './templates/index.mustache?raw';
 
+const FileNames = {
+  Json: 'controller.json' as const,
+  Atom: 'controller.atom' as const,
+};
+
 export default {
   async scheduled() {
     const browser = await puppeteer.launch(env.BROWSER);
 
     const controllerReleases = await controller(browser);
+    await env.BUCKET.put(FileNames.Json, JSON.stringify(controllerReleases), {
+      httpMetadata: { contentType: 'application/json' },
+    });
     await env.BUCKET.put(
-      'controller.json',
-      JSON.stringify(controllerReleases),
-      {
-        httpMetadata: { contentType: 'application/json' },
-      },
-    );
-    await env.BUCKET.put(
-      'controller.atom',
+      FileNames.Atom,
       await generateFeed(controllerReleases),
       {
         httpMetadata: { contentType: 'application/atom+xml' },
@@ -43,7 +44,7 @@ export default {
       arch: os.arch(),
     };
 
-    const files = fs.readdirSync('output');
+    const files = Object.values(FileNames);
 
     const indexPage = Mustache.render(indexTemplate, {
       files,
