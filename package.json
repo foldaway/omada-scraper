@@ -11,37 +11,5 @@
     "build": "tsc -p tsconfig.production.json --outDir dist && cp -R src/templates dist/",
     "clean": "rm -Rf dist/**",
     "start": "ts-node src/server.ts"
-  },
-  "dependencies": {
-    "@sentry/node": "^5.20.1",
-    "axios": "^1.8.2",
-    "bluebird": "^3.7.2",
-    "lodash": "^4.17.21",
-    "luxon": "^3.4.4",
-    "pug": "^3.0.3",
-    "puppeteer": "^21.5.1",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "ts-polyfill": "^3.8.2",
-    "turndown": "^7.0.0",
-    "xast-util-to-xml": "^3.0.1"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.159",
-    "@types/luxon": "^3.4.2",
-    "@types/node": "~18",
-    "@types/pug": "^2.0.10",
-    "@types/turndown": "^5.0.0",
-    "@types/validator": "^13.0.0",
-    "@types/xast": "^1.0.2",
-    "@typescript-eslint/eslint-plugin": "^3.0.2",
-    "@typescript-eslint/parser": "^3.0.2",
-    "eslint": "^5.16.0 || ^6.1.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-prettier": "^3.1.3",
-    "prettier": "^2.0.5",
-    "ts-node": "^8.10.2",
-    "typescript": "^4.9.4"
   }
 }
