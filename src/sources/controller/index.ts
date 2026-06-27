@@ -15,6 +15,15 @@ const REGEX_TITLE_VERSION = [
   /Controller\s+([0-9.x]+(?:\sBeta)?)/i,
 ];
 
+const ALLOWED_HTML_ATTRIBUTES = new Set([
+  'alt',
+  'colspan',
+  'href',
+  'rowspan',
+  'src',
+  'title',
+]);
+
 const SELECTOR_REPLY_CONTENT = '#reply-area .reply-content .content-wrap';
 const SELECTOR_TOPIC_BODY = '.topic-content .content-wrap, .topic-content';
 
@@ -83,6 +92,47 @@ function parseVersion(text: string): string | null {
   }
 
   return null;
+}
+
+export async function simplifyReleaseHtml(html: string): Promise<string> {
+  const rewrittenHtml = await new HTMLRewriter()
+    .onDocument({
+      comments(comment) {
+        comment.remove();
+      },
+    })
+    .on('script, style, iframe, noscript, form, input, button', {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on('span, font', {
+      element(element) {
+        element.removeAndKeepContent();
+      },
+    })
+    .on('*', {
+      comments(comment) {
+        comment.remove();
+      },
+      element(element) {
+        const attributeNames = Array.from(element.attributes, ([name]) => name);
+
+        for (const name of attributeNames) {
+          if (!ALLOWED_HTML_ATTRIBUTES.has(name.toLowerCase())) {
+            element.removeAttribute(name);
+          }
+        }
+      },
+    })
+    .transform(
+      new Response(html, {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      }),
+    )
+    .text();
+
+  return rewrittenHtml.replace(/<p>(?:\s|&nbsp;|\u00a0)*<\/p>/gi, '').trim();
 }
 
 export default async function controller(browser: Browser): Promise<Release[]> {
@@ -163,9 +213,10 @@ export default async function controller(browser: Browser): Promise<Release[]> {
 
     await page.goto(normalizedLink);
 
-    const postBody = await page.evaluate((selectorTopicBody) => {
+    const rawPostBody = await page.evaluate((selectorTopicBody) => {
       return document.querySelector(selectorTopicBody).innerHTML;
     }, SELECTOR_TOPIC_BODY);
+    const postBody = await simplifyReleaseHtml(rawPostBody);
 
     const release: Release = {
       body: turndownService.turndown(postBody),
