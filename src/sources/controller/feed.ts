@@ -196,7 +196,7 @@ export default async function generateFeed(
             name: 'link',
             attributes: {
               rel: 'self',
-              href: 'https://fourthclasshonours.github.io/omada-scraper/controller.atom',
+              href: 'https://omada-scraper.foldaway.space/controller.atom',
             },
             children: [],
           },
