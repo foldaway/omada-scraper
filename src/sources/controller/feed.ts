@@ -1,6 +1,29 @@
 import type { Element, Root } from 'xast';
 import { toXml } from 'xast-util-to-xml';
-import type { Release } from './types';
+import type { Release, ReleaseType } from './types';
+
+function getReleaseTitleSuffix(type: ReleaseType): string {
+  switch (type) {
+    case 'hardware': {
+      return 'Hardware Controller';
+    }
+    case 'software': {
+      return 'Software Controller';
+    }
+    default: {
+      return 'Omada Controller';
+    }
+  }
+}
+
+function getReleaseTitle(release: Release): string {
+  const platform =
+    release.platform !== 'unknown' ? ` for ${release.platform}` : '';
+
+  return `v${release.version}${platform} - ${getReleaseTitleSuffix(
+    release.type,
+  )}`;
+}
 
 function generateEntry(release: Release): Element {
   return {
@@ -26,9 +49,7 @@ function generateEntry(release: Release): Element {
         children: [
           {
             type: 'text',
-            value: `v${release.version}${
-              release.platform !== 'unknown' ? ` for ${release.platform}` : ''
-            }`,
+            value: getReleaseTitle(release),
           },
         ],
       },
@@ -136,7 +157,7 @@ export default async function generateFeed(
               {
                 type: 'text',
                 value:
-                  'https://community.tp-link.com/en/business/forum/582?tagId=684,854',
+                  'https://community.tp-link.com/en/business/forum/topic/245226?moduleId=582&sortDir=DESC&page=1',
               },
             ],
           },
@@ -166,7 +187,7 @@ export default async function generateFeed(
             type: 'element',
             name: 'link',
             attributes: {
-              href: 'https://community.tp-link.com/en/business/forum/582?tagId=684,854',
+              href: 'https://community.tp-link.com/en/business/forum/topic/245226?moduleId=582&sortDir=DESC&page=1',
             },
             children: [],
           },

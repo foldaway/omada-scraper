@@ -1,38 +1,62 @@
 import type { Browser } from '@cloudflare/puppeteer';
 import TurndownService from 'turndown';
-import { Platform, Release, ReleaseListItem, ReleaseType } from './types';
+import type { Platform, Release, ReleaseListItem, ReleaseType } from './types';
 
-const REGEX_TITLE_CONTROLLER =
-  /Omada (\w+) Controller_V([0-9.]+(?:\sBeta)?)[_|\s]?(\w+)?/i;
-const REGEX_TITLE_RELEASE_DATE = /(?:Released|Updated) on ([A-Za-z0-9\s,]+)/i;
+const CONSOLIDATED_THREAD_URL =
+  'https://community.tp-link.com/en/business/forum/topic/245226?moduleId=582&sortDir=DESC&page=1';
+
+const REGEX_TITLE_RELEASE_DATE =
+  /(?:Released|Updated|Update|Release|Closed) on ([A-Za-z0-9\s,]+)/i;
+
+const REGEX_TITLE_VERSION = [
+  /Network_Application_V([0-9.x]+(?:\sBeta)?)/i,
+  /Controller[_\s]+V([0-9.x]+(?:\sBeta)?)/i,
+  /Controllers?\s+V([0-9.x]+(?:\sBeta)?)/i,
+  /Controller\s+([0-9.x]+(?:\sBeta)?)/i,
+];
+
+const SELECTOR_REPLY_CONTENT = '#reply-area .reply-content .content-wrap';
+const SELECTOR_TOPIC_BODY = '.topic-content .content-wrap, .topic-content';
+
+function normalizeTopicUrl(link: string): string {
+  const url = new URL(link, CONSOLIDATED_THREAD_URL);
+  return `${url.origin}${url.pathname}`;
+}
 
 function getReleaseType(text: string): ReleaseType {
-  switch (text.trim().toLowerCase()) {
-    case 'sdn':
-    case 'software': {
-      return 'software';
-    }
-    case 'hardware': {
-      return 'hardware';
-    }
-    default: {
-      return 'unknown';
-    }
+  const normalizedText = text.trim().toLowerCase();
+
+  if (
+    normalizedText.includes('hardware') ||
+    /\b(?:oc\d+|er\d+)/i.test(normalizedText)
+  ) {
+    return 'hardware';
   }
+
+  if (
+    normalizedText.includes('software') ||
+    normalizedText.includes('network_application') ||
+    normalizedText.includes('network application') ||
+    normalizedText.includes('sdn controller')
+  ) {
+    return 'software';
+  }
+
+  return 'unknown';
 }
 
 function getPlatform(text: string): Platform {
-  switch (text.trim().toLowerCase()) {
-    case 'windows': {
-      return 'windows';
-    }
-    case 'linux': {
-      return 'linux';
-    }
-    default: {
-      return 'unknown';
-    }
+  const normalizedText = text.trim().toLowerCase();
+
+  if (normalizedText.includes('windows')) {
+    return 'windows';
   }
+
+  if (normalizedText.includes('linux')) {
+    return 'linux';
+  }
+
+  return 'unknown';
 }
 
 function parseDate(text: string) {
@@ -49,46 +73,70 @@ function parseDate(text: string) {
   return new Date(textPatched).toISOString();
 }
 
+function parseVersion(text: string): string | null {
+  for (const regex of REGEX_TITLE_VERSION) {
+    const matches = text.match(regex);
+
+    if (matches != null && matches.length > 1) {
+      return matches[1];
+    }
+  }
+
+  return null;
+}
+
 export default async function controller(browser: Browser): Promise<Release[]> {
   const turndownService = new TurndownService();
 
   const page = await browser.newPage();
-  await page.goto(
-    'https://community.tp-link.com/en/business/forum/582?tagId=684,854',
-  );
+  await page.goto(CONSOLIDATED_THREAD_URL);
 
-  const releaseListItems = await page.evaluate(() => {
+  const releaseListItems = await page.evaluate((selectorReplyContent) => {
     const results: ReleaseListItem[] = [];
+    const linksSeen = new Set<string>();
 
-    const topicListItemElements = Array.from(
-      document.querySelectorAll('.topic-list .item-wrap'),
+    const releaseUpdateElements = Array.from(
+      document.querySelectorAll(selectorReplyContent),
     );
 
-    for (const topicListItemElement of topicListItemElements) {
-      const title =
-        topicListItemElement.querySelector('.title-wrap a')?.textContent ??
-        null;
+    for (const releaseUpdateElement of releaseUpdateElements) {
+      const releaseLinkElements = Array.from(
+        releaseUpdateElement.querySelectorAll<HTMLAnchorElement>(
+          'a[href*="/en/business/forum/topic/"]',
+        ),
+      );
 
-      const link =
-        // @ts-ignore
-        topicListItemElement.querySelector('.title-wrap a')?.href ?? null;
+      for (const releaseLinkElement of releaseLinkElements) {
+        const title = releaseLinkElement.textContent?.trim() ?? null;
+        const link = releaseLinkElement.href;
+        const summary = releaseUpdateElement.textContent?.trim() ?? title;
 
-      const summary =
-        topicListItemElement.querySelector('.text-wrap')?.textContent ?? null;
+        if (
+          title == null ||
+          !title.match(/omada|controller/i) ||
+          !title.match(/released|updated|update|release|closed/i)
+        ) {
+          continue;
+        }
 
-      if (title == null || link == null || summary == null) {
-        continue;
+        const normalizedLink = new URL(link).pathname;
+
+        if (linksSeen.has(normalizedLink)) {
+          continue;
+        }
+
+        linksSeen.add(normalizedLink);
+
+        results.push({
+          title,
+          link,
+          summary,
+        });
       }
-
-      results.push({
-        title,
-        link,
-        summary,
-      });
     }
 
     return results;
-  });
+  }, SELECTOR_REPLY_CONTENT);
 
   const releases: Release[] = [];
 
@@ -102,28 +150,31 @@ export default async function controller(browser: Browser): Promise<Release[]> {
       continue;
     }
 
-    const controllerMatches = title.match(REGEX_TITLE_CONTROLLER);
+    const version = parseVersion(title);
 
-    if (controllerMatches == null || controllerMatches.length < 3) {
+    if (version == null) {
+      console.error(`could not match controller version for '${title}'`);
       continue;
     }
 
     console.error(`working on '${title}'`);
 
-    await page.goto(link);
+    const normalizedLink = normalizeTopicUrl(link);
 
-    const postBody = await page.evaluate(() => {
-      return document.querySelector('.topic-content').innerHTML;
-    });
+    await page.goto(normalizedLink);
+
+    const postBody = await page.evaluate((selectorTopicBody) => {
+      return document.querySelector(selectorTopicBody).innerHTML;
+    }, SELECTOR_TOPIC_BODY);
 
     const release: Release = {
       body: turndownService.turndown(postBody),
       body_html: postBody,
-      link,
+      link: normalizedLink,
       summary,
-      type: getReleaseType(controllerMatches[1]),
-      version: controllerMatches[2],
-      platform: getPlatform(controllerMatches[3] ?? ''),
+      type: getReleaseType(title),
+      version,
+      platform: getPlatform(title),
       date: parseDate(releaseDateMatches[1]),
     };
 
