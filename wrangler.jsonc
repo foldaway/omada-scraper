@@ -7,5 +7,11 @@
   "main": "./src/index.ts",
   "browser": {
     "binding": "BROWSER"
-  }
+  },
+  "r2_buckets": [
+    {
+      "bucket_name": "omada-scraper-data",
+      "binding": "BUCKET"
+    }
+  ]
 }
